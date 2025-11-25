@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DB Monitoring Login</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f3f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .login-box {
+            background: white;
+            padding: 24px;
+            width: 320px;
+            border-radius: 8px;
+            box-shadow: 0 0 16px rgba(0,0,0,0.15);
+        }
+        .login-box h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #0078ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .error {
+            color: #b40000;
+            margin-bottom: 12px;
+            display: none;
+            font-size: 13px;
+        }
+        .link {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .link a {
+            color: #0078ff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+    <h2>Login</h2>
+    <div class="error" id="errBox"></div>
+
+    <input type="email" id="email" placeholder="Email" autocomplete="off">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="doLogin()">Sign In</button>
+
+    <div class="link">
+        Have an invite code? <a href="/register">Register</a>
+    </div>
+</div>
+
+<script>
+async function doLogin() {
+    const errBox = document.getElementById('errBox');
+    errBox.style.display = 'none';
+    errBox.innerText = '';
+
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('password').value.trim();
+
+    if (!email || !pass) {
+        errBox.innerText = 'Email and password are required.';
+        errBox.style.display = 'block';
+        return;
+    }
+
+    try {
+        const res = await fetch('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json' },
+            body: JSON.stringify({ email: email, password: pass })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            errBox.innerText = data.error || 'Invalid email or password.';
+            errBox.style.display = 'block';
+            return;
+        }
+
+        window.location = '/portal';
+    } catch (e) {
+        errBox.innerText = 'Network error. Try again.';
+        errBox.style.display = 'block';
+    }
+}
+</script>
+
+</body>
+</html>

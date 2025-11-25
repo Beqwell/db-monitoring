@@ -1,0 +1,6 @@
+flask
+python-dotenv
+passlib[argon2]
+pyjwt
+prometheus-client
+bcrypt

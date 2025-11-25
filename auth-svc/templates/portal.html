@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DB Monitoring Portal</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f3f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .box {
+            background: white;
+            padding: 24px;
+            width: 350px;
+            border-radius: 8px;
+            box-shadow: 0 0 16px rgba(0,0,0,0.15);
+        }
+        h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .meta {
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 16px;
+        }
+        .links a {
+            display: block;
+            margin-bottom: 8px;
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            text-align: center;
+            color: black;
+        }
+        .links a:hover {
+            background: #f5f6f7;
+        }
+        .admin {
+            margin-top: 16px;
+            font-size: 14px;
+            padding: 10px 12px;
+            border-radius: 4px;
+            border: 1px solid #ffb23d;
+            background: #fff7e6;
+        }
+        form {
+            margin-top: 16px;
+            text-align: center;
+        }
+        button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            background: #0078ff;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .invite-box {
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        select {
+            width: 100%;
+            padding: 6px;
+            margin: 6px 0 8px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 13px;
+        }
+        .invite-code {
+            margin-top: 6px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .error {
+            margin-top: 4px;
+            color: #b40000;
+            font-size: 12px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>DB Monitoring Portal</h2>
+    <div class="meta">
+        Signed in as <strong>{{ email }}</strong> ({{ role }})
+    </div>
+
+    <div class="links">
+        <a href="/">Open Grafana</a>
+        <a href="/prometheus/">Open Prometheus</a>
+    </div>
+
+    {% if role == 'operator' %}
+    <div class="admin">
+        <strong>Invite new user</strong>
+        <div class="invite-box">
+            Role for new user:
+            <select id="inviteRole">
+                <option value="viewer">viewer</option>
+                <option value="operator">operator</option>
+            </select>
+            <button type="button" onclick="createInvite()">Generate invite code</button>
+            <div class="invite-code" id="inviteCode"></div>
+            <div class="error" id="inviteError"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="post" action="/auth/logout">
+        <button type="submit">Logout</button>
+    </form>
+</div>
+
+<script>
+async function createInvite() {
+    const roleEl = document.getElementById('inviteRole');
+    const out = document.getElementById('inviteCode');
+    const err = document.getElementById('inviteError');
+
+    if (!roleEl) {
+        return;
+    }
+
+    const role = roleEl.value;
+    out.textContent = '';
+    err.style.display = 'none';
+    err.textContent = '';
+
+    try {
+        const res = await fetch('/auth/invite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            err.textContent = data.error || 'Failed to generate invite.';
+            err.style.display = 'block';
+            return;
+        }
+
+        out.textContent = 'Invite code: ' + (data.code || '');
+    } catch (e) {
+        err.textContent = 'Network error.';
+        err.style.display = 'block';
+    }
+}
+</script>
+
+</body>
+</html>

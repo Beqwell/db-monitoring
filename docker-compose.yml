@@ -1,0 +1,188 @@
+name: db-monitoring
+
+networks:
+  monitor-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  prometheus_data:
+  grafana_data:
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "${MYSQL_HOST_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -uroot -p${MYSQL_ROOT_PASSWORD} -h 127.0.0.1 --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - monitor-net
+
+  mysqld-exporter:
+    image: prom/mysqld-exporter:v0.15.1
+    container_name: mysqld-exporter
+    restart: unless-stopped
+    command:
+      - --config.my-cnf=/etc/.my.cnf
+      - --collect.global_status
+      - --collect.info_schema.innodb_metrics
+      - --collect.engine_innodb_status
+      - --collect.info_schema.processlist
+      - --collect.perf_schema.eventsstatements
+      - --collect.perf_schema.file_events
+    volumes:
+      - ./docker/mysqld-exporter/.my.cnf:/etc/.my.cnf:ro
+    ports:
+      - "9104:9104"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - monitor-net
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    networks:
+      - monitor-net
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: prometheus
+    restart: unless-stopped
+    env_file:
+      - .env
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION}
+      - --web.enable-lifecycle
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./docker/prometheus/rules:/etc/prometheus/rules:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      mysqld-exporter:
+        condition: service_started
+      node-exporter:
+        condition: service_started
+    networks:
+      - monitor-net
+
+  grafana:
+    image: grafana/grafana:11.1.4
+    container_name: grafana
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+      GF_AUTH_PROXY_ENABLED: "true"
+      GF_AUTH_PROXY_HEADER_NAME: "X-WEBAUTH-USER"
+      GF_AUTH_PROXY_AUTO_SIGN_UP: "true"
+      GF_AUTH_BASIC_ENABLED: "false"
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    networks:
+      - monitor-net
+
+  auth-svc:
+    build:
+      context: ./auth-svc
+    container_name: auth-svc
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    volumes:
+      - ./auth-svc/sqlite:/app/sqlite
+      - ./auth-svc/templates:/app/templates:ro
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/healthz').getcode()==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - monitor-net
+
+  proxy:
+    image: nginx:1.27-alpine
+    container_name: reverse-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      grafana:
+        condition: service_started
+      auth-svc:
+        condition: service_started
+    networks:
+      - monitor-net
+
+  loadgen:
+    image: python:3.11-slim
+    container_name: loadgen
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./loadgen:/app:ro
+    environment:
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_USER: ${MYSQL_USER}
+      DB_PASS: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
+      PROFILE: high           # low | med | high
+    command: >
+      sh -c "pip install --no-cache-dir -r requirements.txt &&
+             python /app/loadgen.py"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - monitor-net

@@ -1,0 +1,29 @@
+groups:
+  - name: mysql_alerts
+    rules:
+      - alert: MySQLDown
+        expr: up{job="mysqld-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MySQL is down"
+          description: "mysqld-exporter reports MySQL is unreachable for more than 1 minute."
+
+      - alert: MySQLHighThreadsRunning
+        expr: mysql_global_status_threads_running > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of running threads"
+          description: "mysql_global_status_threads_running > 100 for 5 minutes."
+
+      - alert: MySQLSlowQueries
+        expr: rate(mysql_global_status_slow_queries[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow queries detected"
+          description: "mysql_global_status_slow_queries is increasing during the last 5 minutes."

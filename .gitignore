@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Env files
+.env
+.env.local
+*.env
+
+# SQLite database
+auth-svc/sqlite/*.db
+auth-svc/sqlite/*.sqlite
+auth-svc/sqlite/*.sqlite3
+
+# Docker
+*.pid
+*.pid.lock
+docker/*.log
+
+# Editor folders
+.vscode/
+.idea/
+
+# Virtual environments
+venv/
+.venv/
+
+# Bytecode / build
+dist/
+build/
+
+# Prometheus / Grafana state (kept in volumes, not repo)
+prometheus_data/
+grafana_data/
+mysql_data/
