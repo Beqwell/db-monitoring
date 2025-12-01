@@ -2,78 +2,164 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DB Monitoring Login</title>
+    <title>DB Monitoring · Login</title>
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f1f3f4;
+            padding: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1f2937);
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
         }
-        .login-box {
-            background: white;
-            padding: 24px;
-            width: 320px;
-            border-radius: 8px;
-            box-shadow: 0 0 16px rgba(0,0,0,0.15);
+
+        .auth-layout {
+            width: 100%;
+            max-width: 380px;
+            padding: 16px;
         }
-        .login-box h2 {
-            margin-top: 0;
+
+        .auth-card {
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 22px 20px 18px;
+        }
+
+        .auth-title {
+            margin: 0 0 4px;
+            font-size: 20px;
             text-align: center;
         }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 8px;
-            margin-bottom: 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+
+        .auth-subtitle {
+            margin: 0 0 16px;
+            font-size: 13px;
+            text-align: center;
+            color: #6b7280;
         }
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #0078ff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 15px;
-            cursor: pointer;
-        }
-        .error {
-            color: #b40000;
-            margin-bottom: 12px;
+
+        .auth-error {
             display: none;
+            margin-bottom: 12px;
+            padding: 8px 9px;
+            border-radius: 6px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
             font-size: 13px;
         }
-        .link {
+
+        .auth-field {
+            display: block;
+            margin-bottom: 14px;
+        }
+
+        .auth-label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 9px 10px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            outline: none;
+        }
+
+        .auth-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 1px #bfdbfe;
+        }
+
+        .auth-actions {
+            margin-top: 4px;
+        }
+
+        .auth-button {
+            width: 100%;
+            padding: 9px 0;
+            border: none;
+            border-radius: 999px;
+            background: #2563eb;
+            color: #f9fafb;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.12s ease;
+        }
+
+        .auth-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .auth-button:active {
+            transform: translateY(0);
+        }
+
+        .auth-footer {
             margin-top: 10px;
             text-align: center;
             font-size: 13px;
+            color: #6b7280;
         }
-        .link a {
-            color: #0078ff;
+
+        .auth-footer a {
+            color: #2563eb;
             text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-<div class="login-box">
-    <h2>Login</h2>
-    <div class="error" id="errBox"></div>
+<main class="auth-layout">
+    <section class="auth-card">
+        <h1 class="auth-title">Login</h1>
+        <p class="auth-subtitle">Sign in to DB Monitoring</p>
 
-    <input type="email" id="email" placeholder="Email" autocomplete="off">
-    <input type="password" id="password" placeholder="Password">
+        <div class="auth-error" id="errBox"></div>
 
-    <button onclick="doLogin()">Sign In</button>
+        <label class="auth-field">
+            <span class="auth-label">Email</span>
+            <input
+                class="auth-input"
+                type="email"
+                id="email"
+                autocomplete="off"
+                placeholder="you@example.com">
+        </label>
 
-    <div class="link">
-        Have an invite code? <a href="/register">Register</a>
-    </div>
-</div>
+        <label class="auth-field">
+            <span class="auth-label">Password</span>
+            <input
+                class="auth-input"
+                type="password"
+                id="password"
+                placeholder="••••••••">
+        </label>
+
+        <div class="auth-actions">
+            <button class="auth-button" id="loginBtn" type="button">Sign In</button>
+        </div>
+
+        <div class="auth-footer">
+            Have an invite code?
+            <a href="/register">Register</a>
+        </div>
+    </section>
+</main>
 
 <script>
 async function doLogin() {
@@ -111,6 +197,8 @@ async function doLogin() {
         errBox.style.display = 'block';
     }
 }
+
+document.getElementById('loginBtn').addEventListener('click', doLogin);
 </script>
 
 </body>

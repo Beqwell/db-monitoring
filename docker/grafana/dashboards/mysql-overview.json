@@ -48,7 +48,7 @@
       "title": "Queries per second (QPS)",
       "targets": [
         {
-          "expr": "rate(mysql_global_status_questions[1m])"
+          "expr": "(irate(mysql_global_status_questions[30s]) or vector(0))"
         }
       ],
       "gridPos": {
@@ -132,6 +132,45 @@
         "x": 12,
         "y": 16
       }
+    },
+    {
+      "type": "timeseries",
+      "title": "MySQL Network Traffic (bytes/sec)",
+      "targets": [
+        {
+          "expr": "(rate(mysql_global_status_bytes_sent[1m]) or vector(0))"
+        },
+        {
+          "expr": "(rate(mysql_global_status_bytes_received[1m]) or vector(0))"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "MySQL Commands (SELECT / INSERT / UPDATE per sec)",
+      "targets": [
+        {
+          "expr": "(rate(mysql_global_status_commands_total{command=\"select\"}[1m]) or vector(0))"
+        },
+        {
+          "expr": "(rate(mysql_global_status_commands_total{command=\"insert\"}[1m]) or vector(0))"
+        },
+        {
+          "expr": "(rate(mysql_global_status_commands_total{command=\"update\"}[1m]) or vector(0))"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      }
     }
   ],
   "refresh": "5s",
@@ -143,5 +182,5 @@
   },
   "title": "MySQL Overview",
   "uid": "mysql-overview",
-  "version": 1
+  "version": 2
 }

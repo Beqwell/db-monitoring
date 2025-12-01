@@ -83,8 +83,19 @@ def init_db():
       )
     """)
 
+    # таблица профиля нагрузки для loadgen
+    cur.execute("""
+      CREATE TABLE IF NOT EXISTS load_profile (
+        id INTEGER PRIMARY KEY CHECK(id=1),
+        profile TEXT NOT NULL CHECK(profile IN ('off','low','med','high')),
+        updated_at TEXT NOT NULL,
+        updated_by INTEGER
+      )
+    """)
+
     conn.commit()
 
+    # дефолтный админ
     cur.execute("SELECT id FROM users WHERE email=?", (ADMIN_EMAIL,))
     if not cur.fetchone():
         cur.execute(
@@ -92,6 +103,16 @@ def init_db():
             (ADMIN_EMAIL, argon2.hash(ADMIN_PASSWORD), "operator", datetime.datetime.utcnow().isoformat())
         )
         conn.commit()
+
+    # дефолтный профиль нагрузки: off (при запуске системы нагрузки нет)
+    cur.execute("SELECT profile FROM load_profile WHERE id=1")
+    if not cur.fetchone():
+        cur.execute(
+            "INSERT INTO load_profile(id, profile, updated_at, updated_by) VALUES(1, 'off', ?, NULL)",
+            (datetime.datetime.utcnow().isoformat(),)
+        )
+        conn.commit()
+
     conn.close()
 
 
@@ -300,6 +321,64 @@ def register():
         if PROM_AVAILABLE:
             AUTH_REGISTER_SUCCESS.inc()
         return jsonify({"status": "ok"}), 201
+
+
+# ---------- Load profile API ----------
+
+@app.get("/load/status")
+def load_status():
+    """Вернёт текущий профиль нагрузки + текст на английском для портала."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT profile, updated_at FROM load_profile WHERE id=1")
+    row = cur.fetchone()
+    conn.close()
+
+    profile = row[0] if row else "off"
+
+    text_map = {
+        "off": "Load generator is OFF. No synthetic traffic is sent to MySQL.",
+        "low": "Load generator is in LOW mode (about 200 operations per second).",
+        "med": "Load generator is in MEDIUM mode (about 2000 operations per second).",
+        "high": "Load generator is in HIGH mode (about 10000 operations per second).",
+    }
+
+    return jsonify({
+        "profile": profile,
+        "status_text": text_map.get(profile, "Unknown load profile.")
+    })
+
+
+@app.post("/load/set")
+def load_set():
+    """Устанавливает профиль нагрузки: off / low / med / high (только оператор)."""
+    t = _get_token_from_req()
+    if not t:
+        return ("no token", 401)
+    try:
+        payload = decode_token(t)
+    except Exception as e:
+        return (str(e), 401)
+
+    if not require_operator(payload.get("role")):
+        return ("forbidden", 403)
+
+    data = request.get_json(silent=True) or {}
+    profile = data.get("profile", "off")
+
+    if profile not in ("off", "low", "med", "high"):
+        return jsonify({"error": "invalid profile"}), 400
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE load_profile SET profile=?, updated_at=?, updated_by=? WHERE id=1",
+        (profile, datetime.datetime.utcnow().isoformat(), payload.get("sub"))
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"profile": profile})
 
 
 # ---------- Portal ----------

@@ -6,121 +6,266 @@
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f1f3f4;
+            padding: 24px 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: #e5e7eb;
+        }
+
+        .portal-wrap {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 16px 18px 20px;
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+        }
+
+        .portal-header {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .box {
-            background: white;
-            padding: 24px;
-            width: 350px;
-            border-radius: 8px;
-            box-shadow: 0 0 16px rgba(0,0,0,0.15);
-        }
-        h2 {
-            margin-top: 0;
-            text-align: center;
-        }
-        .meta {
-            text-align: center;
-            font-size: 14px;
-            color: #555;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 10px;
             margin-bottom: 16px;
         }
+
+        .portal-title {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .portal-user {
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .portal-user strong {
+            font-weight: 600;
+        }
+
+        .portal-body {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+            gap: 16px;
+        }
+
+        .portal-section {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            padding: 12px 12px 14px;
+            font-size: 14px;
+        }
+
+        .portal-section + .portal-section {
+            margin-top: 0;
+        }
+
+        .section-title {
+            margin: 0 0 8px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .section-text {
+            margin: 0 0 10px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         .links a {
             display: block;
-            margin-bottom: 8px;
+            padding: 8px 10px;
+            border: 1px solid #d1d5db;
             text-decoration: none;
-            padding: 10px 12px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            text-align: center;
-            color: black;
+            font-size: 14px;
+            color: #111827;
+            background: #f9fafb;
         }
+
         .links a:hover {
-            background: #f5f6f7;
+            background: #edf2ff;
+            border-color: #94a3b8;
         }
-        .admin {
-            margin-top: 16px;
-            font-size: 14px;
-            padding: 10px 12px;
-            border-radius: 4px;
-            border: 1px solid #ffb23d;
-            background: #fff7e6;
+
+        .admin-block {
+            margin-top: 8px;
         }
-        form {
-            margin-top: 16px;
-            text-align: center;
-        }
-        button {
-            padding: 8px 16px;
-            border-radius: 4px;
-            border: none;
-            background: #0078ff;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .invite-box {
+
+        .admin-block + .admin-block {
             margin-top: 12px;
-            font-size: 13px;
         }
+
+        .admin-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 4px;
+        }
+
+        .admin-hint {
+            margin: 0 0 6px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
         select {
             width: 100%;
-            padding: 6px;
-            margin: 6px 0 8px 0;
-            border-radius: 4px;
-            border: 1px solid #ddd;
+            padding: 6px 8px;
             font-size: 13px;
+            border-radius: 3px;
+            border: 1px solid #d1d5db;
+            margin-bottom: 8px;
+            background-color: #ffffff;
         }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 14px;
+            border-radius: 3px;
+            border: 1px solid transparent;
+            font-size: 13px;
+            cursor: pointer;
+            background-color: #2563eb;
+            color: #f9fafb;
+        }
+
+        .btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-ghost {
+            background-color: #f9fafb;
+            color: #111827;
+            border-color: #d1d5db;
+        }
+
+        .btn-ghost:hover {
+            background-color: #e5e7eb;
+        }
+
         .invite-code {
             margin-top: 6px;
-            font-family: monospace;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 13px;
             word-break: break-all;
         }
+
         .error {
             margin-top: 4px;
-            color: #b40000;
+            color: #b91c1c;
             font-size: 12px;
             display: none;
+        }
+
+        .load-status-box {
+            margin-top: 4px;
+            padding: 7px 8px;
+            font-size: 13px;
+            border-radius: 3px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            min-height: 38px;
+        }
+
+        .load-buttons {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .load-buttons button {
+            flex: 1 1 44%;
+        }
+
+        .logout-row {
+            margin-top: 16px;
+            text-align: right;
+        }
+
+        .logout-row form {
+            display: inline-block;
+            margin: 0;
         }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>DB Monitoring Portal</h2>
-    <div class="meta">
-        Signed in as <strong>{{ email }}</strong> ({{ role }})
-    </div>
-
-    <div class="links">
-        <a href="/">Open Grafana</a>
-        <a href="/prometheus/">Open Prometheus</a>
-    </div>
-
-    {% if role == 'operator' %}
-    <div class="admin">
-        <strong>Invite new user</strong>
-        <div class="invite-box">
-            Role for new user:
-            <select id="inviteRole">
-                <option value="viewer">viewer</option>
-                <option value="operator">operator</option>
-            </select>
-            <button type="button" onclick="createInvite()">Generate invite code</button>
-            <div class="invite-code" id="inviteCode"></div>
-            <div class="error" id="inviteError"></div>
+<div class="portal-wrap">
+    <header class="portal-header">
+        <h1 class="portal-title">DB Monitoring Portal</h1>
+        <div class="portal-user">
+            Signed in as <strong>{{ email }}</strong> ({{ role }})
         </div>
-    </div>
-    {% endif %}
+    </header>
 
-    <form method="post" action="/auth/logout">
-        <button type="submit">Logout</button>
-    </form>
+    <div class="portal-body">
+        <section class="portal-section">
+            <h2 class="section-title">Dashboards</h2>
+            <p class="section-text">Open monitoring interfaces in new tabs.</p>
+            <div class="links">
+                <a href="/" target="_blank" rel="noopener noreferrer">Open Grafana</a>
+                <a href="/prometheus/" target="_blank" rel="noopener noreferrer">Open Prometheus</a>
+            </div>
+        </section>
+
+        {% if role == 'operator' %}
+        <section class="portal-section">
+            <div class="admin-block">
+                <p class="admin-title">Invite new user</p>
+                <p class="admin-hint">Choose a role and generate a one-time invite code.</p>
+
+                <select id="inviteRole">
+                    <option value="viewer">viewer</option>
+                    <option value="operator">operator</option>
+                </select>
+
+                <button type="button" class="btn" onclick="createInvite()">Generate invite code</button>
+
+                <div class="invite-code" id="inviteCode"></div>
+                <div class="error" id="inviteError"></div>
+            </div>
+
+            <div class="admin-block">
+                <p class="admin-title">Load generator</p>
+                <p class="admin-hint">Switch the current database load profile.</p>
+
+                <div id="loadStatus" class="load-status-box">
+                    Loading load status...
+                </div>
+
+                <div class="load-buttons">
+                    <button type="button" class="btn-ghost" onclick="setLoadProfile('off')">OFF</button>
+                    <button type="button" class="btn-ghost" onclick="setLoadProfile('low')">LOW</button>
+                    <button type="button" class="btn-ghost" onclick="setLoadProfile('med')">MEDIUM</button>
+                    <button type="button" class="btn-ghost" onclick="setLoadProfile('high')">HIGH</button>
+                </div>
+
+                <div class="error" id="loadError"></div>
+            </div>
+        </section>
+        {% else %}
+        <section class="portal-section">
+            <h2 class="section-title">Access</h2>
+            <p class="section-text">
+                You are logged in as a viewer. Operator tools (invites, load generator) are not available for this role.
+            </p>
+        </section>
+        {% endif %}
+    </div>
+
+    <div class="logout-row">
+        <form method="post" action="/auth/logout">
+            <button type="submit" class="btn btn-ghost">Logout</button>
+        </form>
+    </div>
 </div>
 
 <script>
@@ -159,6 +304,67 @@ async function createInvite() {
         err.style.display = 'block';
     }
 }
+
+async function refreshLoadStatus() {
+    const statusEl = document.getElementById('loadStatus');
+    const errEl = document.getElementById('loadError');
+    if (!statusEl) return;
+
+    try {
+        const res = await fetch('/load/status');
+        const data = await res.json();
+        statusEl.textContent = data.status_text || ('Current profile: ' + (data.profile || 'unknown'));
+
+        if (errEl) {
+            errEl.style.display = 'none';
+            errEl.textContent = '';
+        }
+    } catch (e) {
+        statusEl.textContent = 'Failed to load status.';
+
+        if (errEl) {
+            errEl.style.display = 'block';
+            errEl.textContent = 'Network error while loading status.';
+        }
+    }
+}
+
+async function setLoadProfile(profile) {
+    const errEl = document.getElementById('loadError');
+    if (errEl) {
+        errEl.style.display = 'none';
+        errEl.textContent = '';
+    }
+
+    try {
+        const res = await fetch('/load/set', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ profile: profile })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+            if (errEl) {
+                errEl.textContent = data.error || 'Failed to change load profile.';
+                errEl.style.display = 'block';
+            }
+            return;
+        }
+
+        refreshLoadStatus();
+    } catch (e) {
+        if (errEl) {
+            errEl.textContent = 'Network error while changing load profile.';
+            errEl.style.display = 'block';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    refreshLoadStatus();
+});
 </script>
 
 </body>

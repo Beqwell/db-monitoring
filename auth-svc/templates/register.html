@@ -6,68 +6,217 @@
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f1f3f4;
+            padding: 32px 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: #e5e7eb;
             display: flex;
-            align-items: center;
             justify-content: center;
-            height: 100vh;
+            align-items: flex-start;
+            min-height: 100vh;
         }
-        .box {
-            background: white;
-            padding: 24px;
-            width: 320px;
-            border-radius: 8px;
-            box-shadow: 0 0 16px rgba(0,0,0,0.15);
+
+        .reg-shell {
+            width: 100%;
+            max-width: 360px;
+            padding: 0 16px;
         }
-        h2 { text-align: center; margin-top: 0; }
-        input {
-            width: 100%; padding: 10px; margin-top: 8px; margin-bottom: 16px;
-            border: 1px solid #ddd; border-radius: 4px;
+
+        .reg-card {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            padding: 20px 18px 18px;
+            border-radius: 10px;
         }
-        button {
-            width: 100%; padding: 10px; border-radius: 4px; border: none;
-            background: #0078ff; color: white; cursor: pointer; font-size: 15px;
+
+        .reg-title {
+            margin: 0 0 4px;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
         }
-        .error { color: #b40000; margin-bottom: 12px; display: none; text-align: center; }
-        a { display: block; text-align: center; font-size: 14px; margin-top: 12px; color: #0078ff; text-decoration: none; }
+
+        .reg-subtitle {
+            margin: 0 0 14px;
+            font-size: 13px;
+            text-align: center;
+            color: #6b7280;
+        }
+
+        .reg-error {
+            display: none;
+            margin-bottom: 10px;
+            padding: 7px 8px;
+            border-radius: 6px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            font-size: 13px;
+            color: #b91c1c;
+            text-align: center;
+        }
+
+        .reg-field {
+            margin-bottom: 12px;
+        }
+
+        .reg-label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .reg-input {
+            width: 100%;
+            padding: 9px 10px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            font-size: 14px;
+            outline: none;
+            background-color: #ffffff;
+        }
+
+        .reg-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 1px #bfdbfe;
+        }
+
+        .reg-actions {
+            margin-top: 4px;
+        }
+
+        .btn-main {
+            width: 100%;
+            padding: 9px 0;
+            border-radius: 999px;
+            border: none;
+            background-color: #2563eb;
+            color: #f9fafb;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.12s ease;
+        }
+
+        .btn-main:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .btn-main:active {
+            transform: translateY(0);
+        }
+
+        .reg-footer-link {
+            margin-top: 10px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .reg-footer-link a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .reg-footer-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>Register</h2>
-    <div class="error" id="errBox">Registration failed</div>
+<div class="reg-shell">
+    <div class="reg-card">
+        <h1 class="reg-title">Create account</h1>
+        <p class="reg-subtitle">Use your invite code to join DB Monitoring.</p>
 
-    <input type="email" id="email" placeholder="Email" autocomplete="off">
-    <input type="password" id="password" placeholder="Password">
-    <input type="text" id="invite" placeholder="Invite Code">
+        <div class="reg-error" id="errBox"></div>
 
-    <button onclick="doRegister()">Create Account</button>
+        <div class="reg-field">
+            <label class="reg-label" for="email">Email</label>
+            <input
+                class="reg-input"
+                type="email"
+                id="email"
+                autocomplete="off"
+                placeholder="you@example.com"
+            >
+        </div>
 
-    <a href="/login">Back to Login</a>
+        <div class="reg-field">
+            <label class="reg-label" for="password">Password</label>
+            <input
+                class="reg-input"
+                type="password"
+                id="password"
+                placeholder="••••••••"
+            >
+        </div>
+
+        <div class="reg-field">
+            <label class="reg-label" for="invite">Invite code</label>
+            <input
+                class="reg-input"
+                type="text"
+                id="invite"
+                placeholder="paste your invite code"
+            >
+        </div>
+
+        <div class="reg-actions">
+            <button type="button" class="btn-main" id="regBtn">Create account</button>
+        </div>
+
+        <div class="reg-footer-link">
+            Already registered?
+            <a href="/login">Back to login</a>
+        </div>
+    </div>
 </div>
 
 <script>
 async function doRegister() {
-    document.getElementById('errBox').style.display = 'none';
-
+    const errBox = document.getElementById('errBox');
     const email = document.getElementById('email').value.trim();
     const pass  = document.getElementById('password').value.trim();
     const code  = document.getElementById('invite').value.trim();
 
-    const res = await fetch('/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify({ email: email, password: pass, invite_code: code })
-    });
+    errBox.style.display = 'none';
+    errBox.textContent = '';
 
-    if (!res.ok) {
-        document.getElementById('errBox').style.display = 'block';
+    if (!email || !pass || !code) {
+        errBox.textContent = 'Email, password and invite code are required.';
+        errBox.style.display = 'block';
         return;
     }
-    window.location = '/login';
+
+    try {
+        const res = await fetch('/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json' },
+            body: JSON.stringify({ email, password: pass, invite_code: code })
+        });
+
+        let data = {};
+        try {
+            data = await res.json();
+        } catch (_) {
+            data = {};
+        }
+
+        if (!res.ok) {
+            errBox.textContent = data.error || 'Registration failed.';
+            errBox.style.display = 'block';
+            return;
+        }
+
+        window.location.href = '/login';
+    } catch (e) {
+        errBox.textContent = 'Network error. Please try again.';
+        errBox.style.display = 'block';
+    }
 }
+
+document.getElementById('regBtn').addEventListener('click', doRegister);
 </script>
 
 </body>

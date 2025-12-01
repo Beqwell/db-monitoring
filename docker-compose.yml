@@ -177,7 +177,8 @@ services:
       DB_USER: ${MYSQL_USER}
       DB_PASS: ${MYSQL_PASSWORD}
       DB_NAME: ${MYSQL_DATABASE}
-      PROFILE: high           # low | med | high
+      LOAD_STATUS_URL: http://auth-svc:8080/load/status
+      LOAD_WORKERS: "8"
     command: >
       sh -c "pip install --no-cache-dir -r requirements.txt &&
              python /app/loadgen.py"
