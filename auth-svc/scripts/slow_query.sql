@@ -1,6 +1,5 @@
 -- Викликати так:
 -- docker compose exec -T mysql mysql -uroot -p%MYSQL_ROOT_PASSWORD% appdb < scripts/slow_query.sql
--- Симулює повільні запити (sleep) у циклі
 DELIMITER //
 CREATE PROCEDURE slowp()
 BEGIN

@@ -1,5 +1,4 @@
 # run_slow_query.ps1
-# Выполняет slow_query.sql внутри контейнера mysql в БД appdb
 
 $ErrorActionPreference = "Stop"
 
